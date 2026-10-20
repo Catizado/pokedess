@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-title>Mi Pokédex</ion-title>
+    <ion-button slot="end" fill="clear" color="light" routerLink="/scanner">Escáner</ion-button>
+    <ion-button slot="end" fill="clear" color="light" routerLink="/home">Catálogo</ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (history().length) {
+    <div class="history-heading">
+      <p>{{ history().length }} Pokémon guardados</p>
+      <ion-button fill="clear" color="danger" (click)="clear()">Vaciar historial</ion-button>
+    </div>
+    <ion-list>
+      @for (pokemon of history(); track pokemon.id) {
+        <ion-item [routerLink]="['/detail', pokemon.id]" button detail>
+          <img class="pokemon-thumb" [src]="pokemon.image" [alt]="pokemon.displayName ?? pokemon.name" />
+          <ion-label>
+            <h2>#{{ pokemon.id }} · {{ pokemon.displayName ?? pokemon.name }}</h2>
+            <p>{{ pokemon.types.join(' · ') }}</p>
+          </ion-label>
+          <ion-button slot="end" fill="clear" color="medium" (click)="$event.stopPropagation(); remove(pokemon.id)">
+            Quitar
+          </ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
+    <div class="empty-state">
+      <h1>Tu Pokédex está vacía</h1>
+      <p>Busca un Pokémon por nombre o número para guardarlo aquí.</p>
+      <ion-button color="danger" routerLink="/scanner">Ir al escáner</ion-button>
+    </div>
+  }
+</ion-content>

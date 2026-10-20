@@ -1,0 +1,104 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="danger">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-text-capitalize">
+      @if (pokemon(); as p) {
+        {{ p.name }} #{{ p.id | number:'3.0-0' }}
+      }
+    </ion-title>
+    @if (pokemon()?.isCustom) {
+      <ion-buttons slot="end">
+        <ion-button (click)="edit()">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button (click)="confirmDelete()">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (pokemon(); as pokemon) {
+    <div class="header-container ion-text-center">
+      <img [src]="pokemon.image || 'assets/placeholder.svg'" [alt]="pokemon.name" class="hero-image" />
+      <h1 class="ion-text-capitalize">{{ pokemon.name }}</h1>
+    </div>
+
+    <ion-grid>
+      <ion-row>
+        <!-- Tipos -->
+        <ion-col size="6">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-subtitle>Tipos</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              @for (t of pokemon.types; track t) {
+                <span class="type-badge" [class]="t.toLowerCase()">{{ typeName(t) }}</span>
+              }
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Debilidades -->
+        <ion-col size="6">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-subtitle>Debilidades</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              @for (w of pokemon.weaknesses; track w) {
+                <span class="type-badge" [class]="w.toLowerCase()">{{ typeName(w) }}</span>
+              }
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="6">
+          <ion-card class="info-card ion-text-center">
+            <ion-card-header><ion-card-subtitle>Altura</ion-card-subtitle></ion-card-header>
+            <ion-card-content><h2>{{ pokemon.height }} m</h2></ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6">
+          <ion-card class="info-card ion-text-center">
+            <ion-card-header><ion-card-subtitle>Peso</ion-card-subtitle></ion-card-header>
+            <ion-card-content><h2>{{ pokemon.weight }} kg</h2></ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Stats Base -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Puntos Base</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @for (stat of pokemon.stats; track stat.name) {
+          <div class="stat-row">
+            <div class="stat-labels">
+              <span class="ion-text-uppercase stat-name">{{ statName(stat.name) }}</span>
+              <span class="stat-value">{{ stat.value }}</span>
+            </div>
+            <ion-progress-bar [value]="getStatProgress(stat.value)" color="danger"></ion-progress-bar>
+          </div>
+        }
+      </ion-card-content>
+    </ion-card>
+  } @else if (loading()) {
+    <div class="state">
+      <ion-spinner name="crescent" color="danger"></ion-spinner>
+    </div>
+  } @else {
+    <div class="state">
+      <p>No se encontró este Pokémon.</p>
+    </div>
+  }
+</ion-content>

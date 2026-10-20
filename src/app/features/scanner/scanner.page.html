@@ -1,0 +1,164 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-title>Kanto AR</ion-title>
+    <ion-button slot="end" fill="clear" color="light" routerLink="/pokedex">Colección</ion-button>
+    <ion-button slot="end" fill="clear" color="light" routerLink="/home">Catálogo</ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="scanner-content">
+  <main class="dex-page">
+    <article class="dex-shell">
+      <header class="dex-topline">
+        <span class="dex-lens" aria-hidden="true"></span>
+        <div class="dex-wordmark">
+          <span>POKÉDEX</span>
+          <small>ESCÁNER DE KANTO</small>
+        </div>
+        <span class="dex-pokeball" aria-hidden="true"><i></i></span>
+      </header>
+
+      <section class="dex-viewer" aria-label="Visor de cámara">
+        <div class="dex-viewer-header">
+          <span><i [class.live]="cameraActive()"></i>{{ cameraActive() ? 'LECTURA EN VIVO' : 'VISOR DE CARTAS' }}</span>
+          <span>KANTO / 001–151</span>
+        </div>
+        <div class="dex-screen-frame">
+          <div class="camera-stage" [class.active]="cameraActive()">
+            <video #videoElement autoplay playsinline muted aria-label="Vista de cámara en vivo"></video>
+            <div #cardGuide class="card-guide" aria-hidden="true"><span></span></div>
+            @if (cameraActive() && overlayEnabled()) {
+              @if (result(); as pokemon) {
+                <article class="ar-overlay" [style.border-left-color]="typeColor(pokemon.types)"
+                  aria-label="Datos del Pokémon detectado">
+                  <header class="ar-heading">
+                    <span class="ar-lock"><i></i> IDENTIFICADO</span>
+                    <span class="ar-number">#{{ pokemon.id }}</span>
+                  </header>
+                  <div class="ar-identity">
+                    <div>
+                      <h2>{{ pokemon.displayName ?? pokemon.name }}</h2>
+                      <div class="ar-types">
+                        @for (type of pokemon.types; track type) {
+                          <span class="type-badge" [class]="'type-badge ' + type">{{ typeName(type) }}</span>
+                        }
+                      </div>
+                    </div>
+                    <img class="ar-sprite" [src]="pokemon.image" [alt]="pokemon.displayName ?? pokemon.name" />
+                  </div>
+                  <div class="ar-measurements">
+                    <span>ALTURA <b>{{ pokemon.height }} m</b></span>
+                    <span>PESO <b>{{ pokemon.weight }} kg</b></span>
+                  </div>
+                  <div class="ar-abilities"><span>HABILIDADES</span><p>{{ abilityNames(pokemon.abilities) }}</p></div>
+                  <div class="ar-stats">
+                    <h3>ESTADÍSTICAS BASE</h3>
+                    @for (stat of pokemon.stats; track stat.name) {
+                      <div class="ar-stat">
+                        <span>{{ stat.name }}</span><b>{{ stat.value }}</b>
+                        <div class="ar-stat-track"><span [style.width.%]="statPercent(stat.value)"
+                          [style.background-color]="typeColor(pokemon.types)"></span></div>
+                      </div>
+                    }
+                  </div>
+                </article>
+              }
+            }
+            @if (!cameraActive()) {
+              <div class="dex-idle-mark" aria-hidden="true"><span></span><small>LISTO PARA ESCANEAR</small></div>
+            }
+          </div>
+        </div>
+        <div class="dex-screen-footer">
+          <span>{{ cameraMessage() }}</span>
+          <span>FOTOGRAMAS {{ framesCaptured() }}</span>
+        </div>
+      </section>
+
+      <section class="dex-console" aria-label="Controles Pokédex">
+        <div class="dex-console-top">
+          <span>POKÉMON</span><span>LECTURA / DATOS</span><span>TIPO(S)</span>
+        </div>
+        <div class="dex-console-body">
+          <div class="dex-dpad" aria-hidden="true"><i class="north"></i><i class="east"></i><i class="south"></i><i class="west"></i><b></b></div>
+
+          <div class="dex-display">
+            <div class="dex-display-label"><span>IDENTIFICACIÓN</span><i [class.busy]="searching() || recognizer.processing() || visualRecognizer.processing()"></i></div>
+            <div class="search-row">
+              <ion-searchbar placeholder="Nombre o número" [value]="query()"
+                (ionInput)="setQuery($event)" (keyup.enter)="searchPokemon()"></ion-searchbar>
+              <ion-button class="dex-search-button" [disabled]="searching()" (click)="searchPokemon()" aria-label="Buscar Pokémon">⌕</ion-button>
+            </div>
+            <p class="recognition-status" aria-live="polite">{{ recognitionMessage() }}</p>
+            @if (visualRecognizer.initializing()) {
+              <p class="visual-model-note">Preparando visión por primera vez: 125–153 MB. Después queda guardado.</p>
+              <progress class="recognition-progress" max="100" [value]="visualRecognizer.progress()">{{ visualRecognizer.progress() }}%</progress>
+            } @else if (visualRecognizer.processing()) {
+              <p class="visual-model-note">Analizando aspecto en {{ visualRecognizer.engine() }}…</p>
+            }
+            @if (recognizer.initializing() || recognizer.processing()) {
+              <progress class="recognition-progress" max="100" [value]="recognizer.progress()">{{ recognizer.progress() }}%</progress>
+            }
+            @if (searchMessage()) { <p class="search-status" aria-live="polite">{{ searchMessage() }}</p> }
+            @if (result(); as pokemon) {
+              <div class="dex-result-line">
+                <span class="dex-result-number">N.º {{ pokemon.id }}</span>
+                <b>{{ pokemon.displayName ?? pokemon.name }}</b>
+                <span>{{ pokemon.types.map(typeName).join(' · ') }}</span>
+                <ion-button fill="clear" color="dark" [routerLink]="['/detail', pokemon.id]">Ficha</ion-button>
+              </div>
+            }
+          </div>
+
+          <div class="dex-action-buttons">
+            <ion-button class="dex-action stop" [disabled]="cameraBusy()" (click)="toggleCamera()"
+              [attr.aria-label]="cameraActive() ? 'Detener cámara' : 'Activar cámara'">
+              {{ cameraActive() ? '■' : '●' }}
+            </ion-button>
+            <ion-button class="dex-action upload" (click)="imageInput.click()" aria-label="Cargar foto">↑</ion-button>
+            <ion-button class="dex-action rescan" [disabled]="recognizer.processing() || visualRecognizer.processing()"
+              (click)="rescan()" aria-label="Reescanear">↻</ion-button>
+          </div>
+        </div>
+
+        @if (visualCandidates().length) {
+          <div class="dex-candidates" aria-label="Coincidencias visuales">
+            <span>{{ visualSource() === 'camera' ? 'CONFIRMA UNA COINCIDENCIA' : '¿QUÉ POKÉMON ES?' }}</span>
+            @for (candidate of visualCandidates(); track candidate.name) {
+              <ion-button fill="outline" color="dark" (click)="acceptVisualCandidate(candidate.name)">
+                {{ visualCandidateLabel(candidate.name) }}
+              </ion-button>
+            }
+          </div>
+        }
+
+        <div class="dex-console-footer">
+          <div class="dex-camera-options">
+            <ion-select label="CÁMARA" labelPlacement="stacked" [value]="selectedCamera()"
+              (ionChange)="selectCamera($event)" interface="popover">
+              @for (camera of cameras(); track camera.deviceId; let index = $index) {
+                <ion-select-option [value]="camera.deviceId">Cámara {{ index + 1 }}</ion-select-option>
+              }
+            </ion-select>
+            <ion-select label="CAPTURA" labelPlacement="stacked" [value]="frameInterval()"
+              (ionChange)="setFrameInterval($event)" interface="popover">
+              <ion-select-option [value]="350">350 ms</ion-select-option>
+              <ion-select-option [value]="500">500 ms</ion-select-option>
+              <ion-select-option [value]="700">700 ms</ion-select-option>
+              <ion-select-option [value]="1000">1 s</ion-select-option>
+              <ion-select-option [value]="1500">1,5 s</ion-select-option>
+            </ion-select>
+          </div>
+          <ion-toggle labelPlacement="start" [checked]="voice.enabled()" [disabled]="!voice.supported"
+            (ionChange)="setVoice($event)">Voz</ion-toggle>
+          @if (!voice.supported) { <span class="voice-note">Voz no disponible</span> }
+        </div>
+
+        <input #imageInput class="upload-input" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/gif"
+          aria-label="Seleccionar imagen de carta" (change)="recognizeUploadedImage($event)" />
+        <canvas #frameCanvas class="frame-buffer" aria-hidden="true"></canvas>
+      </section>
+      <footer class="dex-device-footer"><span>PRIMERO OCR · DESPUÉS VISIÓN</span><span>POKÉDEX AR / KANTO 151</span></footer>
+    </article>
+  </main>
+</ion-content>

@@ -1,0 +1,90 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="danger">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditing ? 'Editar Pokémon' : 'Nuevo Pokémon' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">Guardar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item>
+      <ion-input
+        label="Nombre" labelPlacement="stacked" placeholder="Ej: pikachu"
+        [value]="form().name" (ionInput)="setField('name', $event)">
+      </ion-input>
+    </ion-item>
+    @if (submitted() && errors().name) {
+      <ion-note color="danger" class="error">{{ errors().name }}</ion-note>
+    }
+
+    <ion-item>
+      <ion-input
+        label="URL de la imagen (opcional)" labelPlacement="stacked" placeholder="https://..."
+        [value]="form().image" (ionInput)="setField('image', $event)">
+      </ion-input>
+    </ion-item>
+    @if (submitted() && errors().image) {
+      <ion-note color="danger" class="error">{{ errors().image }}</ion-note>
+    }
+
+    <ion-item>
+      <ion-input
+        label="Altura (m)" labelPlacement="stacked" type="number" inputmode="decimal"
+        [value]="form().height" (ionInput)="setField('height', $event)">
+      </ion-input>
+    </ion-item>
+    @if (submitted() && errors().height) {
+      <ion-note color="danger" class="error">{{ errors().height }}</ion-note>
+    }
+
+    <ion-item>
+      <ion-input
+        label="Peso (kg)" labelPlacement="stacked" type="number" inputmode="decimal"
+        [value]="form().weight" (ionInput)="setField('weight', $event)">
+      </ion-input>
+    </ion-item>
+    @if (submitted() && errors().weight) {
+      <ion-note color="danger" class="error">{{ errors().weight }}</ion-note>
+    }
+
+    <ion-item>
+      <ion-select
+        label="Tipos (1 o 2)" labelPlacement="stacked" [multiple]="true"
+        [value]="form().types" (ionChange)="setList('types', $event)">
+        @for (t of typeOptions; track t) {
+          <ion-select-option [value]="t">{{ typeName(t) }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+    @if (submitted() && errors().types) {
+      <ion-note color="danger" class="error">{{ errors().types }}</ion-note>
+    }
+
+    <ion-item>
+      <ion-select
+        label="Debilidades (opcional)" labelPlacement="stacked" [multiple]="true"
+        [value]="form().weaknesses" (ionChange)="setList('weaknesses', $event)">
+        @for (t of typeOptions; track t) {
+          <ion-select-option [value]="t">{{ typeName(t) }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    @for (stat of stats; track stat.name) {
+      <ion-item>
+        <ion-input
+          [label]="statName(stat.name)" labelPlacement="stacked" type="number" inputmode="numeric"
+          [value]="form().stats[stat.name]" (ionInput)="setStat(stat.name, $event)">
+        </ion-input>
+      </ion-item>
+    }
+    @if (submitted() && errors().stats) {
+      <ion-note color="danger" class="error">{{ errors().stats }}</ion-note>
+    }
+  </ion-list>
+</ion-content>

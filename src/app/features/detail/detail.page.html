@@ -1,0 +1,121 @@
+<ion-header>
+  <ion-toolbar color="danger">
+    <ion-button slot="start" fill="clear" color="light" routerLink="/pokedex">Volver</ion-button>
+    <ion-title>Ficha Pokémon</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content">
+  @if (loading()) {
+    <ion-progress-bar type="indeterminate" color="danger"></ion-progress-bar>
+  } @else if (errorMessage()) {
+    <p class="detail-state">{{ errorMessage() }}</p>
+  } @else if (pokemon(); as entry) {
+    <main class="detail-shell">
+      <section class="detail-hero">
+        <div class="detail-artwork">
+          <span class="detail-number">N.º {{ entry.id }}</span>
+          <img [src]="entry.image" [alt]="entry.displayName ?? entry.name" />
+        </div>
+        <div class="detail-intro">
+          <p class="detail-kicker">ARCHIVO DE CAMPO / POKÉDEX</p>
+          <h1>{{ entry.displayName ?? entry.name }}</h1>
+          <div class="detail-types">
+            @for (type of entry.types; track type) {
+              <span class="type-badge" [class]="'type-badge ' + type">{{ typeName(type) }}</span>
+            }
+          </div>
+          <p class="detail-description">{{ entry.description }}</p>
+          <div class="detail-measures">
+            <span>ALTURA <b>{{ entry.height }} m</b></span>
+            <span>PESO <b>{{ entry.weight }} kg</b></span>
+          </div>
+        </div>
+      </section>
+
+      <nav class="detail-tabs" role="tablist" aria-label="Secciones de la ficha">
+        <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'details'"
+          [class.active]="activeTab() === 'details'" (click)="selectTab('details')">Datos</button>
+        <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'moves'"
+          [class.active]="activeTab() === 'moves'" (click)="selectTab('moves')">Movimientos</button>
+      </nav>
+
+      @if (activeTab() === 'details') {
+        <section class="detail-facts" role="tabpanel">
+          <div class="ability-line">
+            <h2>Habilidades</h2>
+            <p>{{ abilityNames(entry.abilities) }}</p>
+          </div>
+          <div class="stats-panel">
+            <h2>Estadísticas base</h2>
+            @for (stat of entry.stats; track stat.name) {
+              <div class="stat-row">
+                <span>{{ statName(stat.name) }}</span><b>{{ stat.value }}</b>
+                <ion-progress-bar [value]="statProgress(stat.value)" color="danger"></ion-progress-bar>
+              </div>
+            }
+          </div>
+        </section>
+      } @else {
+        <section class="learnset-panel" role="tabpanel">
+          <div class="learnset-heading">
+            <div>
+              <p class="detail-kicker">APRENDIZAJE</p>
+              <h2>Movimientos</h2>
+            </div>
+            @if (versionGroups().length) {
+              <ion-select label="Edición" labelPlacement="stacked" [value]="selectedVersionGroup()"
+                (ionChange)="selectVersionGroup($event)" interface="popover">
+                @for (version of versionGroups(); track version) {
+                  <ion-select-option [value]="version">{{ versionGroupName(version) }}</ion-select-option>
+                }
+              </ion-select>
+            }
+          </div>
+
+          <div class="move-tabs" role="tablist" aria-label="Método de aprendizaje">
+            <button type="button" role="tab" [attr.aria-selected]="moveCategory() === 'level-up'"
+              [class.active]="moveCategory() === 'level-up'" (click)="selectMoveCategory('level-up')">
+              Por nivel
+            </button>
+            <button type="button" role="tab" [attr.aria-selected]="moveCategory() === 'machine'"
+              [class.active]="moveCategory() === 'machine'" (click)="selectMoveCategory('machine')">
+              MT / MO
+            </button>
+          </div>
+
+          @if (movesLoading()) {
+            <div class="detail-state"><ion-spinner name="crescent" color="danger"></ion-spinner><p>Cargando movimientos…</p></div>
+          } @else if (movesError()) {
+            <div class="detail-state"><p>{{ movesError() }}</p><ion-button color="danger" (click)="retryMoves()">Reintentar</ion-button></div>
+          } @else if (moves(); as learnset) {
+            @if (moveNamesLoading()) {
+              <div class="detail-state"><ion-spinner name="crescent" color="danger"></ion-spinner><p>Cargando nombres en español…</p></div>
+            } @else if (visibleMoves().length) {
+              <p class="move-count">{{ visibleMoves().length }} movimientos · {{ versionGroupName(selectedVersionGroup()) }}</p>
+              <div class="move-list">
+                @for (move of visibleMoves(); track move.name + move.versionGroup) {
+                  <article class="move-row">
+                    <span class="move-mark" aria-hidden="true"></span>
+                    <h3>{{ moveName(move) }}</h3>
+                    @if (moveCategory() === 'level-up') {
+                      <span class="move-level">NV. {{ move.levelLearnedAt }}</span>
+                    } @else {
+                      <span class="move-level">MT / MO</span>
+                    }
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="detail-state">
+                <p>No aparecen movimientos para este método en esta edición.</p>
+                @if (!learnset.length) { <p>La PokéAPI no devolvió un learnset para este Pokémon.</p> }
+              </div>
+            }
+            <p class="learnset-note">MT significa Máquina Técnica y MO, Máquina Oculta. PokeAPI indica el método, pero no el número de cada máquina.</p>
+          }
+        </section>
+      }
+    </main>
+  }
+</ion-content>

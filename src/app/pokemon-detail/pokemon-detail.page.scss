@@ -1,0 +1,13 @@
+.hero-image {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+}

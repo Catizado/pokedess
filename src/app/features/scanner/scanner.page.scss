@@ -1,0 +1,24 @@
+.scanner-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 24px; max-width: 1280px; margin: 0 auto; padding: 24px; }
+.camera-stage { position: relative; display: grid; place-items: center; min-height: 390px; overflow: hidden; background: #17191b; }
+.camera-stage video { width: 100%; height: 100%; max-height: 66vh; object-fit: contain; }
+.camera-stage:not(.active) video { visibility: hidden; }
+.camera-placeholder { position: absolute; color: #e8e8e8; }
+.card-guide { position: absolute; width: min(42%, 250px); aspect-ratio: 0.69; border: 2px solid #f5f5f5; border-radius: 8px; box-shadow: 0 0 0 999px #0005; pointer-events: none; }
+.card-guide span { position: absolute; left: 8%; right: 8%; top: 17%; border-top: 1px dashed #fff9; }
+.camera-controls, .search-row { display: flex; align-items: end; gap: 12px; margin-top: 16px; }
+.camera-controls ion-select { min-width: 130px; }
+.camera-status, .search-status { min-height: 24px; }
+.capture-count, .number, .eyebrow { color: #5b5f62; font-size: .85rem; }
+.frame-buffer { display: none; }
+.upload-input { display: none; }
+.recognition-status { min-height: 24px; color: #5b5f62; }
+.recognition-progress { width: min(100%, 320px); }
+.lookup-panel { padding: 8px 0; }
+.lookup-panel h1 { margin: 4px 0 18px; font-size: 1.65rem; }
+.search-row ion-searchbar { flex: 1; padding: 0; }
+.result-card { margin: 20px 0; border-radius: 8px; }
+.result-card ion-card-content { display: flex; align-items: center; gap: 16px; }
+.result-card img { width: 112px; height: 112px; object-fit: contain; }
+.result-card h2 { margin: 4px 0; text-transform: capitalize; }
+.phase-note { margin-top: 28px; color: #666; font-size: .9rem; }
+@media (max-width: 760px) { .scanner-layout { grid-template-columns: 1fr; padding: 16px; } .camera-stage { min-height: 280px; } .camera-controls { flex-wrap: wrap; } }

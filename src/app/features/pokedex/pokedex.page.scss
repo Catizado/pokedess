@@ -1,0 +1,6 @@
+.history-heading { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 12px auto 0; padding: 0 16px; }
+ion-list { max-width: 960px; margin: 0 auto; }
+.pokemon-thumb { width: 58px; height: 58px; margin: 8px 16px 8px 0; object-fit: contain; }
+ion-item h2 { text-transform: capitalize; }
+.empty-state { display: grid; justify-items: center; gap: 8px; padding: 15vh 24px; text-align: center; }
+.empty-state h1 { font-size: 1.6rem; }
